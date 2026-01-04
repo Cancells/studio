@@ -83,7 +83,6 @@ export function PhoneSignInForm() {
         title: 'Failed to send OTP.',
         description: error.message,
       });
-      window.recaptchaVerifier.clear();
     }
   }
 
