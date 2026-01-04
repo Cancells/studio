@@ -2,8 +2,8 @@
 
 import { useUser, useAuth, useMemoFirebase } from '@/firebase';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
-import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { collection, doc, Firestore } from 'firebase/firestore';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { doc } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import { useEffect } from 'react';
 import { Loader } from 'lucide-react';
@@ -24,23 +24,19 @@ export default function AuthManager({ children }: { children: React.ReactNode })
     return doc(firestore, 'users', user.uid);
   }, [user, firestore]);
 
-  const usersCollectionRef = useMemoFirebase(() => {
-    if(!firestore) return null;
-    return collection(firestore, 'users');
-  }, [firestore])
-
   useEffect(() => {
-    if (user && userDocRef && usersCollectionRef) {
-        // We'll use a non-blocking write to create the user document
-        // if it doesn't exist.
-        addDocumentNonBlocking(usersCollectionRef, {
+    if (user && userDocRef) {
+        // We'll use a non-blocking write to create/merge the user document.
+        // This will create the document if it doesn't exist, or merge the
+        // data if it does. This avoids security rule violations.
+        setDocumentNonBlocking(userDocRef, {
             id: user.uid,
             email: user.email || '',
             fullName: user.displayName || 'Anonymous User',
             createdAt: new Date().toISOString(),
-        });
+        }, { merge: true });
     }
-  }, [user, userDocRef, usersCollectionRef]);
+  }, [user, userDocRef]);
 
   if (isUserLoading || !user) {
     return (
