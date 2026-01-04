@@ -2,6 +2,7 @@
 
 import { AppLogo } from '@/components/icons';
 import { AddInvestmentDialog } from '../dashboard/add-investment-dialog';
+import { UserNav } from './user-nav';
 
 export default function Header() {
   return (
@@ -12,6 +13,7 @@ export default function Header() {
       </div>
       <div className="ml-auto flex items-center gap-4">
         <AddInvestmentDialog />
+        <UserNav />
       </div>
     </header>
   );

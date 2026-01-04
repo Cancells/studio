@@ -7,17 +7,20 @@ import { doc } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import { useEffect } from 'react';
 import { Loader } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 
 export default function AuthManager({ children }: { children: React.ReactNode }) {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const firestore = useFirestore();
+  const pathname = usePathname();
 
   useEffect(() => {
-    if (!isUserLoading && !user) {
+    const isAuthPage = pathname === '/signin' || pathname === '/signup';
+    if (!isUserLoading && !user && !isAuthPage) {
       initiateAnonymousSignIn(auth);
     }
-  }, [user, isUserLoading, auth]);
+  }, [user, isUserLoading, auth, pathname]);
 
   const userDocRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -26,19 +29,18 @@ export default function AuthManager({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     if (user && userDocRef) {
-        // We'll use a non-blocking write to create/merge the user document.
-        // This will create the document if it doesn't exist, or merge the
-        // data if it does. This avoids security rule violations.
         setDocumentNonBlocking(userDocRef, {
             id: user.uid,
             email: user.email || '',
-            fullName: user.displayName || 'Anonymous User',
-            createdAt: new Date().toISOString(),
+            fullName: user.displayName || (user.isAnonymous ? 'Anonymous User' : ''),
+            createdAt: user.metadata.creationTime || new Date().toISOString(),
         }, { merge: true });
     }
   }, [user, userDocRef]);
 
-  if (isUserLoading || !user) {
+  const isAuthPage = pathname === '/signin' || pathname === '/signup';
+
+  if ((isUserLoading || !user) && !isAuthPage) {
     return (
       <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background">
         <Loader className="h-12 w-12 animate-spin text-primary" />
