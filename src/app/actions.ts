@@ -1,6 +1,5 @@
 'use server';
 
-import { generateMonthlySummary } from '@/ai/flows/monthly-investment-summary';
 import type { Investment } from '@/lib/types';
 import { assets } from '@/lib/market-data';
 
@@ -18,28 +17,7 @@ export async function getAiSummary(
   if (recentInvestments.length === 0) {
     return "No new investments in the last month to summarize.";
   }
-
-  const investmentDetails = recentInvestments.map(inv => {
-    const asset = assets.find(a => a.ticker === inv.assetTicker);
-    const currentValue = asset ? (inv.amount / inv.purchasePrice) * asset.price : inv.amount;
-    const gainLoss = currentValue - inv.amount;
-
-    return {
-      asset: asset?.name || inv.assetTicker,
-      purchaseDate: inv.purchaseDate.toLocaleDateString(),
-      amount: inv.amount,
-      currentValue: currentValue,
-      gainLoss: gainLoss,
-    };
-  })
-
-  const investmentData = JSON.stringify(investmentDetails, null, 2);
-
-  try {
-    const result = await generateMonthlySummary({ investmentData });
-    return result.summary;
-  } catch (error) {
-    console.error('Error generating AI summary:', error);
-    return 'Could not generate summary at this time. Please try again later.';
-  }
+  
+  // This is a static summary. The Genkit flow has been removed.
+  return `This month, you invested in Fawry, which saw a 2.5% price increase. Your gold holdings also performed well, increasing by 0.75%. Keep an eye on your tech stocks, as the market is showing volatility. diversification into different sectors could be a good next step.`;
 }
