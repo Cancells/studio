@@ -74,7 +74,7 @@
       ]
     },
     "AssetPrice": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$schema": "http://json-schema.org/draft-07schema#",
       "title": "AssetPrice",
       "type": "object",
       "description": "Represents the price of an asset (stock or gold) at a specific point in time.",
@@ -144,7 +144,9 @@
   "auth": {
     "providers": [
       "password",
-      "anonymous"
+      "anonymous",
+      "phone",
+      "emailLink"
     ]
   },
   "firestore": {
