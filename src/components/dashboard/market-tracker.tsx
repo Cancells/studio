@@ -51,7 +51,7 @@ export function MarketTracker() {
                   <div className="text-sm text-muted-foreground">{asset.ticker}</div>
                 </TableCell>
                 <TableCell className="text-right">{formatCurrency(asset.price)}</TableCell>
-                <TableCell className={`text-right ${asset.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <TableCell className={`text-right ${asset.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                   {asset.change.toFixed(2)}%
                 </TableCell>
               </TableRow>

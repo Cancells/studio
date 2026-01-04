@@ -1,6 +1,6 @@
 'use client';
 
-import { Building } from 'lucide-react';
+import { Building, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useInvestments } from '@/context/investment-context';
@@ -8,6 +8,7 @@ import { formatCurrency } from '@/lib/utils';
 import { GoldBarIcon } from '@/components/icons';
 import type { AssetType } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '../ui/button';
 
 const AssetIcon = ({ type }: { type: AssetType }) => {
   const iconProps = { className: "h-6 w-6 text-muted-foreground" };
@@ -18,7 +19,23 @@ const AssetIcon = ({ type }: { type: AssetType }) => {
 };
 
 export function InvestmentsList() {
-  const { investments, assets } = useInvestments();
+  const { investments, assets, removeInvestment } = useInvestments();
+
+  if (investments.length === 0) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Your Investments</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="text-center py-8 text-muted-foreground">
+                    <p>You haven&apos;t added any investments yet.</p>
+                    <p>Click &quot;Add Investment&quot; to get started.</p>
+                </div>
+            </CardContent>
+        </Card>
+    )
+  }
 
   return (
     <Card>
@@ -35,6 +52,7 @@ export function InvestmentsList() {
               <TableHead className="text-right">Current Value</TableHead>
               <TableHead className="text-right">Total Gain/Loss</TableHead>
               <TableHead className="text-right">Gain/Loss %</TableHead>
+              <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -61,13 +79,18 @@ export function InvestmentsList() {
                   <TableCell>{investment.purchaseDate.toLocaleDateString()}</TableCell>
                   <TableCell className="text-right">{formatCurrency(investment.amount)}</TableCell>
                   <TableCell className="text-right">{formatCurrency(currentValue)}</TableCell>
-                  <TableCell className={`text-right font-medium ${gainLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <TableCell className={`text-right font-medium ${gainLoss >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                     {formatCurrency(gainLoss)}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Badge variant={gainLoss >= 0 ? 'default' : 'destructive'} className={`${gainLoss >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                    <Badge variant={gainLoss >= 0 ? 'default' : 'destructive'} className={`${gainLoss >= 0 ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
                       {gainLossPercent.toFixed(2)}%
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Button variant="ghost" size="icon" onClick={() => removeInvestment(investment.id)}>
+                        <Trash2 className="h-4 w-4 text-muted-foreground" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               );

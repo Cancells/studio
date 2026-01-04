@@ -11,7 +11,7 @@ export function PortfolioValue() {
   const GainLossIndicator = ({ value }: { value: number }) => {
     const isPositive = value >= 0;
     return (
-      <span className={`flex items-center text-sm font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+      <span className={`flex items-center text-sm font-medium ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
         {isPositive ? <TrendingUp className="h-4 w-4 mr-1" /> : <TrendingDown className="h-4 w-4 mr-1" />}
         {formatCurrency(value)}
       </span>

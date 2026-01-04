@@ -24,6 +24,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useInvestments } from '@/context/investment-context';
 import { useToast } from '@/hooks/use-toast';
+import { useUser } from '@/firebase';
 
 const investmentSchema = z.object({
   assetTicker: z.string().min(1, 'Please select an asset.'),
@@ -34,13 +35,27 @@ const investmentSchema = z.object({
 export function AddInvestmentDialog() {
   const [open, setOpen] = useState(false);
   const { assets, addInvestment } = useInvestments();
+  const { user } = useUser();
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof investmentSchema>>({
     resolver: zodResolver(investmentSchema),
+    defaultValues: {
+      amount: 0,
+      assetTicker: '',
+      purchaseDate: new Date(),
+    }
   });
 
   function onSubmit(values: z.infer<typeof investmentSchema>) {
+    if (!user) {
+        toast({
+            title: 'Error',
+            description: 'You must be logged in to add an investment.',
+            variant: 'destructive',
+        });
+        return;
+    }
     const asset = assets.find(a => a.ticker === values.assetTicker);
     if (!asset) {
         toast({

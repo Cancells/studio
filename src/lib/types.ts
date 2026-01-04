@@ -10,6 +10,7 @@ export interface Asset {
 
 export interface Investment {
   id: string;
+  userId: string;
   assetTicker: string;
   purchaseDate: Date;
   amount: number;

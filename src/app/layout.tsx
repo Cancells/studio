@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
+import { FirebaseClientProvider } from '@/firebase';
+import AuthManager from '@/components/auth/auth-manager';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -16,10 +18,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="antialiased">
+    <html lang="en" className="antialiased dark">
       <body className={`${inter.variable} font-body`}>
-        {children}
-        <Toaster />
+        <FirebaseClientProvider>
+          <AuthManager>
+            {children}
+          </AuthManager>
+          <Toaster />
+        </FirebaseClientProvider>
       </body>
     </html>
   );
