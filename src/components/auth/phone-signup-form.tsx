@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult } from 'firebase/auth';
+import { RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult, type Auth } from 'firebase/auth';
 
 const phoneSignUpSchema = z.object({
   fullName: z.string().min(1, 'Full name is required.'),
@@ -28,29 +28,33 @@ const otpSchema = z.object({
     otp: z.string().min(6, 'OTP must be 6 digits.').max(6, 'OTP must be 6 digits.'),
 });
 
+// Extend the Auth type to allow attaching the verifier
+interface AuthWithVerifier extends Auth {
+  recaptchaVerifier?: RecaptchaVerifier;
+}
 
 export function PhoneSignUpForm() {
-  const auth = useAuth();
+  const auth: AuthWithVerifier = useAuth();
   const { toast } = useToast();
   const router = useRouter();
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   const [isOtpSent, setIsOtpSent] = useState(false);
-  const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null);
   const recaptchaWrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!auth || !recaptchaWrapperRef.current) return;
     
-    if (!recaptchaVerifierRef.current) {
-        recaptchaVerifierRef.current = new RecaptchaVerifier(auth, recaptchaWrapperRef.current, {
+    if (!auth.recaptchaVerifier) {
+        auth.recaptchaVerifier = new RecaptchaVerifier(auth, recaptchaWrapperRef.current, {
             'size': 'invisible',
             'callback': () => {}
         });
     }
-    const verifier = recaptchaVerifierRef.current;
+
     return () => {
-        if (verifier) {
-            verifier.clear();
+        if (auth.recaptchaVerifier) {
+            auth.recaptchaVerifier.clear();
+            auth.recaptchaVerifier = undefined;
         }
     }
   }, [auth]);
@@ -67,12 +71,12 @@ export function PhoneSignUpForm() {
 
 
   async function onPhoneSubmit(values: z.infer<typeof phoneSignUpSchema>) {
-    if (!recaptchaVerifierRef.current) {
+    if (!auth.recaptchaVerifier) {
         toast({ title: "Recaptcha not initialized", variant: "destructive" });
         return;
     }
     try {
-      const result = await signInWithPhoneNumber(auth, values.phone, recaptchaVerifierRef.current);
+      const result = await signInWithPhoneNumber(auth, values.phone, auth.recaptchaVerifier);
       setConfirmationResult(result);
       setIsOtpSent(true);
       toast({

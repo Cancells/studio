@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult } from 'firebase/auth';
+import { RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult, type Auth } from 'firebase/auth';
 
 const phoneSchema = z.object({
   phone: z.string().regex(/^\+201[0125][0-9]{8}$/, 'Please enter a valid Egyptian phone number (e.g., +201012345678).'),
@@ -27,31 +27,37 @@ const otpSchema = z.object({
     otp: z.string().min(6, 'OTP must be 6 digits.').max(6, 'OTP must be 6 digits.'),
 });
 
+// Extend the Auth type to allow attaching the verifier
+interface AuthWithVerifier extends Auth {
+  recaptchaVerifier?: RecaptchaVerifier;
+}
 
 export function PhoneSignInForm() {
-  const auth = useAuth();
+  const auth: AuthWithVerifier = useAuth();
   const { toast } = useToast();
   const router = useRouter();
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   const [isOtpSent, setIsOtpSent] = useState(false);
-  const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null);
+  
+  // This ref will just hold the container element.
   const recaptchaWrapperRef = useRef<HTMLDivElement>(null);
 
 
   useEffect(() => {
     if (!auth || !recaptchaWrapperRef.current) return;
     
-    if (!recaptchaVerifierRef.current) {
-        recaptchaVerifierRef.current = new RecaptchaVerifier(auth, recaptchaWrapperRef.current, {
+    if (!auth.recaptchaVerifier) {
+        auth.recaptchaVerifier = new RecaptchaVerifier(auth, recaptchaWrapperRef.current, {
             'size': 'invisible',
             'callback': () => {}
         });
     }
 
-    const verifier = recaptchaVerifierRef.current;
+    // This cleanup function will be called when the component unmounts
     return () => {
-        if (verifier) {
-            verifier.clear();
+        if (auth.recaptchaVerifier) {
+            auth.recaptchaVerifier.clear();
+            auth.recaptchaVerifier = undefined;
         }
     }
   }, [auth]);
@@ -69,12 +75,12 @@ export function PhoneSignInForm() {
 
 
   async function onPhoneSubmit(values: z.infer<typeof phoneSchema>) {
-    if (!recaptchaVerifierRef.current) {
+    if (!auth.recaptchaVerifier) {
         toast({ title: "Recaptcha not initialized", variant: "destructive" });
         return;
     }
     try {
-      const result = await signInWithPhoneNumber(auth, values.phone, recaptchaVerifierRef.current);
+      const result = await signInWithPhoneNumber(auth, values.phone, auth.recaptchaVerifier);
       setConfirmationResult(result);
       setIsOtpSent(true);
       toast({
