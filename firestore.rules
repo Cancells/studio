@@ -1,0 +1,149 @@
+/**
+ * Core Philosophy: This ruleset enforces a strict user-ownership model for the EGX Portfolio Tracker app.
+ * All user-specific data, including profiles, investments, and monthly summaries, is isolated within
+ * a user-specific path, ensuring users can only access their own information. A separate global
+ * collection provides public, read-only access to asset price data.
+ *
+ * Data Structure:
+ * - /users/{userId}: A user's private profile document.
+ * - /users/{userId}/investments/{investmentId}: A subcollection containing the user's private investment records.
+ * - /users/{userId}/monthlySummaries/{monthlySummaryId}: A subcollection for the user's private AI-generated summaries.
+ * - /assetPrices/{assetPriceId}: A top-level collection for public asset price data.
+ *
+ * Key Security Decisions:
+ * - Default Deny: All paths are closed by default. Access is granted only through explicit rules.
+ * - Strict Ownership: Users have full control over documents within their own data tree (/users/{userId}/**),
+ *   but are completely denied access to other users' data.
+ * - No User Enumeration: Listing the top-level `/users` collection is forbidden to protect user privacy.
+ * - Public Data Segregation: Publicly readable data (`assetPrices`) is stored in a separate top-level
+ *   collection. Writes to this collection are disabled from the client to ensure data integrity, assuming
+ *   it will be managed by a trusted backend service.
+ * - Denormalization for Authorization: The rules rely on path-based authorization (`/users/{userId}`).
+ *   For data integrity, documents within this path (like Investments) must contain a `userId` field
+ *   that matches the path, and this field is immutable after creation.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    //-------------------------------------------------------------------------
+    // Helper Functions
+    //-------------------------------------------------------------------------
+
+    /**
+     * Checks if the user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Checks if the authenticated user's UID matches the provided userId.
+     * This is the primary function for enforcing document ownership.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * Checks for ownership on an existing document. Used for update and delete
+     * operations to prevent acting on non-existent data.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * Validates that the user is creating their own user profile document and
+     * that the document's internal 'id' field matches their UID.
+     */
+    function isCreatingSelf(userId) {
+      return isOwner(userId) && request.resource.data.id == userId;
+    }
+
+    /**
+     * Validates that a user is creating a document within their own subcollection
+     * and that the document's internal 'userId' field is correctly set to their UID.
+     */
+    function isCreatingOwnedDocument(userId) {
+      return isOwner(userId) && request.resource.data.userId == userId;
+    }
+
+    /**
+     * Validates that the 'userId' field on a document is not being changed during an update.
+     * This ensures that ownership of a document cannot be transferred.
+     */
+    function isUserIdImmutable() {
+      return request.resource.data.userId == resource.data.userId;
+    }
+
+    //-------------------------------------------------------------------------
+    // Collection Rules
+    //-------------------------------------------------------------------------
+
+    /**
+     * @description Manages user profile documents. Only the owner can read, update, or delete their
+     *              own profile. Users cannot list or see other user profiles.
+     * @path /users/{userId}
+     * @allow (create) An authenticated user creating their own profile document, where the document's 'id' field matches their UID.
+     * @deny (list) Any user, authenticated or not, trying to list all documents in the `/users` collection.
+     * @principle Restricts access to a user's own data tree and prevents user enumeration.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isCreatingSelf(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+
+      /**
+       * @description Manages a user's private investment records. Only the owner can create,
+       *              read, update, or delete their own investments.
+       * @path /users/{userId}/investments/{investmentId}
+       * @allow (create) The user `user_abc` creating an investment document under `/users/user_abc/investments/`.
+       * @deny (get) The user `user_xyz` trying to read a document at `/users/user_abc/investments/inv_123`.
+       * @principle Enforces document ownership for all operations within a user-specific subcollection.
+       */
+      match /investments/{investmentId} {
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isCreatingOwnedDocument(userId);
+        allow update: if isExistingOwner(userId) && isUserIdImmutable();
+        allow delete: if isExistingOwner(userId);
+      }
+
+      /**
+       * @description Manages a user's private AI-generated monthly summaries. Only the owner
+       *              can create, read, update, or delete their own summaries.
+       * @path /users/{userId}/monthlySummaries/{monthlySummaryId}
+       * @allow (list) The user `user_abc` listing all documents under `/users/user_abc/monthlySummaries/`.
+       * @deny (update) The user `user_xyz` trying to update a document at `/users/user_abc/monthlySummaries/sum_123`.
+       * @principle Enforces document ownership for all operations within a user-specific subcollection.
+       */
+      match /monthlySummaries/{monthlySummaryId} {
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isCreatingOwnedDocument(userId);
+        allow update: if isExistingOwner(userId) && isUserIdImmutable();
+        allow delete: if isExistingOwner(userId);
+      }
+    }
+
+    /**
+     * @description Stores global asset price data. This data is public and can be read by any
+     *              client, authenticated or not. Writes are disallowed from the client-side
+     *              to protect data integrity.
+     * @path /assetPrices/{assetPriceId}
+     * @allow (get) Any user, including unauthenticated users, reading an asset price document.
+     * @deny (create) Any user trying to create a new asset price document. This must be done by a backend service.
+     * @principle Provides public read-only access to global data while preventing client-side modification.
+     */
+    match /assetPrices/{assetPriceId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+  }
+}
