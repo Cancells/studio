@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -34,21 +34,23 @@ export function PhoneSignInForm() {
   const router = useRouter();
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   const [isOtpSent, setIsOtpSent] = useState(false);
+  const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null);
+  const recaptchaWrapperRef = useRef<HTMLDivElement>(null);
+
 
   useEffect(() => {
-    if (!auth || !('recaptchaVerifier' in window)) {
-        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+    if (!auth || !recaptchaWrapperRef.current) return;
+    
+    if (!recaptchaVerifierRef.current) {
+        recaptchaVerifierRef.current = new RecaptchaVerifier(auth, recaptchaWrapperRef.current, {
             'size': 'invisible',
-            'callback': () => {
-              // reCAPTCHA solved, allow signInWithPhoneNumber.
-            }
+            'callback': () => {}
         });
     }
-    
+
+    const verifier = recaptchaVerifierRef.current;
     return () => {
-        if ('recaptchaVerifier' in window) {
-            window.recaptchaVerifier.clear();
-        }
+        verifier.clear();
     }
   }, [auth]);
   
@@ -65,12 +67,12 @@ export function PhoneSignInForm() {
 
 
   async function onPhoneSubmit(values: z.infer<typeof phoneSchema>) {
-    if (!window.recaptchaVerifier) {
+    if (!recaptchaVerifierRef.current) {
         toast({ title: "Recaptcha not initialized", variant: "destructive" });
         return;
     }
     try {
-      const result = await signInWithPhoneNumber(auth, values.phone, window.recaptchaVerifier);
+      const result = await signInWithPhoneNumber(auth, values.phone, recaptchaVerifierRef.current);
       setConfirmationResult(result);
       setIsOtpSent(true);
       toast({
@@ -134,7 +136,7 @@ export function PhoneSignInForm() {
 
   return (
     <>
-      <div id="recaptcha-container"></div>
+      <div ref={recaptchaWrapperRef} id="recaptcha-container-signin"></div>
       <Form {...phoneForm}>
         <form onSubmit={phoneForm.handleSubmit(onPhoneSubmit)} className="space-y-4 pt-4">
           <FormField
