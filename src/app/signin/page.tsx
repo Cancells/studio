@@ -43,7 +43,6 @@ export default function SignInPage() {
           </Link>
         </p>
       </div>
-      <div id="recaptcha-container"></div>
     </div>
   );
 }

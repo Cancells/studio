@@ -36,15 +36,19 @@ export function PhoneSignInForm() {
   const [isOtpSent, setIsOtpSent] = useState(false);
 
   useEffect(() => {
-    if (!auth) return;
-    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-      'size': 'invisible',
-      'callback': () => {
-        // reCAPTCHA solved, allow signInWithPhoneNumber.
-      }
-    });
+    if (!auth || !('recaptchaVerifier' in window)) {
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+            'size': 'invisible',
+            'callback': () => {
+              // reCAPTCHA solved, allow signInWithPhoneNumber.
+            }
+        });
+    }
+    
     return () => {
-        window.recaptchaVerifier.clear();
+        if ('recaptchaVerifier' in window) {
+            window.recaptchaVerifier.clear();
+        }
     }
   }, [auth]);
   
@@ -79,10 +83,7 @@ export function PhoneSignInForm() {
         title: 'Failed to send OTP.',
         description: error.message,
       });
-      window.recaptchaVerifier.render().then(widgetId => {
-        // @ts-ignore
-        grecaptcha.reset(widgetId);
-      });
+      window.recaptchaVerifier.clear();
     }
   }
 
@@ -133,25 +134,28 @@ export function PhoneSignInForm() {
   }
 
   return (
-    <Form {...phoneForm}>
-      <form onSubmit={phoneForm.handleSubmit(onPhoneSubmit)} className="space-y-4 pt-4">
-        <FormField
-          control={phoneForm.control}
-          name="phone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Phone Number</FormLabel>
-              <FormControl>
-                <Input type="tel" placeholder="+201012345678" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button type="submit" className="w-full">
-          Send OTP
-        </Button>
-      </form>
-    </Form>
+    <>
+      <div id="recaptcha-container"></div>
+      <Form {...phoneForm}>
+        <form onSubmit={phoneForm.handleSubmit(onPhoneSubmit)} className="space-y-4 pt-4">
+          <FormField
+            control={phoneForm.control}
+            name="phone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Phone Number</FormLabel>
+                <FormControl>
+                  <Input type="tel" placeholder="+201012345678" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button type="submit" className="w-full">
+            Send OTP
+          </Button>
+        </form>
+      </Form>
+    </>
   );
 }

@@ -44,7 +44,6 @@ export default function SignUpPage() {
           </Link>
         </p>
       </div>
-      <div id="recaptcha-container"></div>
     </div>
   );
 }
