@@ -3,39 +3,41 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useInvestments } from '@/context/investment-context';
 import { formatCurrency } from '@/lib/utils';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 export function PortfolioValue() {
-  const { totalValue, totalGainLoss, todaysGainLoss } = useInvestments();
+  const { totalValue, totalGainLoss, todaysGainLoss, investments } = useInvestments();
 
-  const GainLossIndicator = ({ value }: { value: number }) => {
-    const isPositive = value >= 0;
+  const todaysChangePercent = totalValue > 0 && (totalValue - todaysGainLoss) > 0 
+    ? (todaysGainLoss / (totalValue - todaysGainLoss)) * 100
+    : 0;
+
+  const GainLossIndicator = ({ value, percent, period }: { value: number, percent: number, period: string }) => {
+    const isPositive = value > 0;
+    const isNegative = value < 0;
+    const isNeutral = value === 0;
+    const colorClass = isPositive ? 'text-primary' : isNegative ? 'text-destructive' : 'text-muted-foreground';
+
     return (
-      <span className={`flex items-center text-sm font-medium ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
-        {isPositive ? <TrendingUp className="h-4 w-4 mr-1" /> : <TrendingDown className="h-4 w-4 mr-1" />}
-        {formatCurrency(value)}
-      </span>
+      <div className={`flex items-baseline gap-2 ${colorClass}`}>
+        <div className='flex items-center'>
+            {isPositive && <TrendingUp className="h-4 w-4" />}
+            {isNegative && <TrendingDown className="h-4 w-4" />}
+            {isNeutral && <Minus className="h-4 w-4" />}
+            <span className="font-medium">{formatCurrency(value)}</span>
+        </div>
+        <span className="font-medium">({percent.toFixed(2)}%)</span>
+        <span className="text-xs text-muted-foreground">{period}</span>
+      </div>
     );
   };
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">Total Portfolio Value</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="text-4xl font-bold">{formatCurrency(totalValue)}</div>
-        <div className="mt-2 flex items-center space-x-6">
-          <div>
-            <p className="text-xs text-muted-foreground">Today's Gain/Loss</p>
-            <GainLossIndicator value={todaysGainLoss} />
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Total Gain/Loss</p>
-            <GainLossIndicator value={totalGainLoss} />
-          </div>
+    <div className="w-full">
+        <div className="text-4xl font-bold tracking-tight">{formatCurrency(totalValue)}</div>
+        <div className="mt-1 flex items-center space-x-4">
+            <GainLossIndicator value={todaysGainLoss} percent={todaysChangePercent} period="Today" />
         </div>
-      </CardContent>
-    </Card>
+    </div>
   );
 }

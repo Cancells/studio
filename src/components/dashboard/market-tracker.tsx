@@ -3,10 +3,10 @@
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useInvestments } from '@/context/investment-context';
 import { formatCurrency } from '@/lib/utils';
 import { Search } from 'lucide-react';
+import { Badge } from '../ui/badge';
 
 export function MarketTracker() {
   const { assets } = useInvestments();
@@ -21,43 +21,27 @@ export function MarketTracker() {
   }, [assets, searchTerm]);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Market Tracker</CardTitle>
-        <div className="relative mt-2">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search stocks or gold..."
-            className="pl-8"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+    <Card className='bg-transparent border-0 shadow-none'>
+      <CardHeader className='p-0'>
+        <CardTitle className='text-lg font-bold'>Market Tracker</CardTitle>
       </CardHeader>
-      <CardContent className="h-[300px] overflow-y-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Asset</TableHead>
-              <TableHead className="text-right">Price</TableHead>
-              <TableHead className="text-right">Change %</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+      <CardContent className="p-0 mt-4 h-[300px] overflow-y-auto">
+        <div className='flex flex-col gap-2'>
             {filteredAssets.map((asset) => (
-              <TableRow key={asset.ticker}>
-                <TableCell>
-                  <div className="font-medium">{asset.name}</div>
-                  <div className="text-sm text-muted-foreground">{asset.ticker}</div>
-                </TableCell>
-                <TableCell className="text-right">{formatCurrency(asset.price)}</TableCell>
-                <TableCell className={`text-right ${asset.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                  {asset.change.toFixed(2)}%
-                </TableCell>
-              </TableRow>
+                 <div key={asset.ticker} className="flex items-center justify-between p-3 rounded-lg hover:bg-accent">
+                    <div>
+                        <div className="font-bold">{asset.name}</div>
+                        <div className="text-sm text-muted-foreground">{asset.ticker}</div>
+                    </div>
+                    <div className='text-right'>
+                        <div className="font-bold">{formatCurrency(asset.price)}</div>
+                        <div className={`text-sm font-medium ${asset.change >= 0 ? 'text-primary' : 'text-destructive'}`}>
+                            {asset.change >= 0 ? '+' : ''}{asset.change.toFixed(2)}%
+                        </div>
+                    </div>
+                </div>
             ))}
-          </TableBody>
-        </Table>
+        </div>
       </CardContent>
     </Card>
   );
