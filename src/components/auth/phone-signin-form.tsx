@@ -50,7 +50,9 @@ export function PhoneSignInForm() {
 
     const verifier = recaptchaVerifierRef.current;
     return () => {
-        verifier.clear();
+        if (verifier) {
+            verifier.clear();
+        }
     }
   }, [auth]);
   
