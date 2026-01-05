@@ -1,0 +1,1 @@
+ /workspaces/codespaces-blank/studio_flutter/.dart_tool/flutter_build/82bd30f8125c686aa237fb3c9af7462e/native_assets.yaml: 

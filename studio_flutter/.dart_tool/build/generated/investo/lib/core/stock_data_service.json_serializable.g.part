@@ -1,0 +1,45 @@
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+StockQuote _$StockQuoteFromJson(Map<String, dynamic> json) => StockQuote(
+      symbol: json['symbol'] as String,
+      name: json['name'] as String,
+      price: (json['price'] as num).toDouble(),
+      change: (json['change'] as num).toDouble(),
+      changePercent: (json['changePercent'] as num).toDouble(),
+      dayHigh: (json['dayHigh'] as num).toDouble(),
+      dayLow: (json['dayLow'] as num).toDouble(),
+      volume: (json['volume'] as num).toInt(),
+      lastUpdate: DateTime.parse(json['lastUpdate'] as String),
+    );
+
+Map<String, dynamic> _$StockQuoteToJson(StockQuote instance) =>
+    <String, dynamic>{
+      'symbol': instance.symbol,
+      'name': instance.name,
+      'price': instance.price,
+      'change': instance.change,
+      'changePercent': instance.changePercent,
+      'dayHigh': instance.dayHigh,
+      'dayLow': instance.dayLow,
+      'volume': instance.volume,
+      'lastUpdate': instance.lastUpdate.toIso8601String(),
+    };
+
+StockPrice _$StockPriceFromJson(Map<String, dynamic> json) => StockPrice(
+      symbol: json['symbol'] as String,
+      price: (json['price'] as num).toDouble(),
+      change: (json['change'] as num).toDouble(),
+      changePercent: (json['changePercent'] as num).toDouble(),
+      timestamp: DateTime.parse(json['timestamp'] as String),
+    );
+
+Map<String, dynamic> _$StockPriceToJson(StockPrice instance) =>
+    <String, dynamic>{
+      'symbol': instance.symbol,
+      'price': instance.price,
+      'change': instance.change,
+      'changePercent': instance.changePercent,
+      'timestamp': instance.timestamp.toIso8601String(),
+    };

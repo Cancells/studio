@@ -1,0 +1,13 @@
+com.aboutyou.dart_packages.sign_in_with_apple-jetified-window-1.0.0-beta04-0 /home/codespace/.gradle/caches/transforms-3/12190dbb48ec28152ce6a5195499dfe6/transformed/jetified-window-1.0.0-beta04/res
+com.aboutyou.dart_packages.sign_in_with_apple-browser-1.5.0-1 /home/codespace/.gradle/caches/transforms-3/41f41b08df4a44d18c5ffecc558b526f/transformed/browser-1.5.0/res
+com.aboutyou.dart_packages.sign_in_with_apple-jetified-window-java-1.0.0-beta04-2 /home/codespace/.gradle/caches/transforms-3/6a5975c634e18c44cce1a95d0e6a7671/transformed/jetified-window-java-1.0.0-beta04/res
+com.aboutyou.dart_packages.sign_in_with_apple-jetified-annotation-experimental-1.1.0-3 /home/codespace/.gradle/caches/transforms-3/99b5e62591e60dbaf21195682ad9002c/transformed/jetified-annotation-experimental-1.1.0/res
+com.aboutyou.dart_packages.sign_in_with_apple-core-1.6.0-4 /home/codespace/.gradle/caches/transforms-3/bd04db714f03ddafdb23810c559c1276/transformed/core-1.6.0/res
+com.aboutyou.dart_packages.sign_in_with_apple-main-5 /home/codespace/.pub-cache/hosted/pub.dev/sign_in_with_apple-5.0.0/android/src/main/res
+com.aboutyou.dart_packages.sign_in_with_apple-release-6 /home/codespace/.pub-cache/hosted/pub.dev/sign_in_with_apple-5.0.0/android/src/release/res
+com.aboutyou.dart_packages.sign_in_with_apple-pngs-7 /workspaces/codespaces-blank/studio_flutter/build/sign_in_with_apple/generated/res/pngs/release
+com.aboutyou.dart_packages.sign_in_with_apple-resValues-8 /workspaces/codespaces-blank/studio_flutter/build/sign_in_with_apple/generated/res/resValues/release
+com.aboutyou.dart_packages.sign_in_with_apple-rs-9 /workspaces/codespaces-blank/studio_flutter/build/sign_in_with_apple/generated/res/rs/release
+com.aboutyou.dart_packages.sign_in_with_apple-mergeReleaseResources-10 /workspaces/codespaces-blank/studio_flutter/build/sign_in_with_apple/intermediates/incremental/release/mergeReleaseResources/merged.dir
+com.aboutyou.dart_packages.sign_in_with_apple-mergeReleaseResources-11 /workspaces/codespaces-blank/studio_flutter/build/sign_in_with_apple/intermediates/incremental/release/mergeReleaseResources/stripped.dir
+com.aboutyou.dart_packages.sign_in_with_apple-merged_res-12 /workspaces/codespaces-blank/studio_flutter/build/sign_in_with_apple/intermediates/merged_res/release
