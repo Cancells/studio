@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -34,6 +35,7 @@ const investmentSchema = z.object({
 
 export function AddInvestmentDialog() {
   const [open, setOpen] = useState(false);
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
   const { assets, addInvestment } = useInvestments();
   const { user } = useUser();
   const { toast } = useToast();
@@ -135,7 +137,7 @@ export function AddInvestmentDialog() {
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Purchase Date</FormLabel>
-                  <Popover>
+                  <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
@@ -154,7 +156,10 @@ export function AddInvestmentDialog() {
                       <Calendar
                         mode="single"
                         selected={field.value}
-                        onSelect={field.onChange}
+                        onSelect={(date) => {
+                            field.onChange(date);
+                            setDatePickerOpen(false);
+                        }}
                         disabled={(date) => date > new Date() || date < new Date('1900-01-01')}
                         initialFocus
                       />
